@@ -757,11 +757,22 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  /* Blocca scroll quando si tocca l'overlay */
+  overscroll-behavior: contain;
 }
 
 .disclaimer-overlay.active {
   opacity: 1;
   visibility: visible;
+}
+
+/* Blocca lo scroll del body quando il disclaimer è attivo */
+body.disclaimer-active,
+html.disclaimer-active {
+  overflow: hidden !important;
+  height: 100%;
+  position: fixed;
+  width: 100%;
 }
 
 .disclaimer-box {
@@ -817,6 +828,8 @@
   padding: 32px;
   max-height: 50vh;
   overflow-y: auto;
+  /* Impedisce che lo scroll si propaghi al body */
+  overscroll-behavior: contain;
 }
 
 .disclaimer-section {
@@ -15324,11 +15337,24 @@ body.dark-mode .cost-economic-table .cost-row-main.loss-result-bg td {
 (function() {
   'use strict';
   
+  // Salva la posizione di scroll per ripristinarla dopo
+  let savedScrollPosition = 0;
+  
   // Funzione per chiudere il disclaimer
   window.closeDisclaimerModal = function() {
     const overlay = document.getElementById('disclaimerOverlay');
     if (overlay) {
       overlay.classList.remove('active');
+      
+      // Riabilita lo scroll del body
+      document.body.classList.remove('disclaimer-active');
+      document.documentElement.classList.remove('disclaimer-active');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      // Ripristina la posizione di scroll
+      window.scrollTo(0, savedScrollPosition);
+      
       // Rimuovi completamente dopo l'animazione
       setTimeout(function() {
         overlay.style.display = 'none';
@@ -15364,6 +15390,14 @@ body.dark-mode .cost-economic-table .cost-row-main.loss-result-bg td {
     const body = document.getElementById('disclaimerBody');
     
     if (overlay) {
+      // Salva la posizione di scroll corrente
+      savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Blocca lo scroll del body
+      document.body.classList.add('disclaimer-active');
+      document.documentElement.classList.add('disclaimer-active');
+      document.body.style.top = '-' + savedScrollPosition + 'px';
+      
       overlay.classList.add('active');
       console.log('[DISCLAIMER] 📋 Modal di presa visione visualizzato');
       
